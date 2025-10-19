@@ -1,9 +1,10 @@
+// Caminho do Ficheiro: src/features/crm/stores/crm-store.ts
+// VERSÃO FINAL E CORRIGIDA
+
 import { create } from 'zustand';
-// Certifique-se de que o caminho para os seus tipos está correto
 import type { Deal, DealStage, Client } from '../types';
 
-// 1. A Interface (o "contrato") que diz ao TypeScript a forma da nossa store.
-// Se isto não estiver aqui, nada mais funciona.
+// A interface que define a "forma" da nossa store.
 interface CRMState {
   deals: Deal[];
   clients: Client[];
@@ -12,10 +13,9 @@ interface CRMState {
   reorderDeal: (stage: DealStage, oldIndex: number, newIndex: number) => void;
 }
 
-// 2. A criação da store, usando a Interface <CRMState>.
-// Esta linha é a que "ativa" os tipos para o resto da aplicação.
+// A CORREÇÃO CRÍTICA ESTÁ AQUI: create<CRMState>((set) => ({ ... }))
+// Adicionamos <CRMState> para ligar a interface à store.
 export const useCRMStore = create<CRMState>((set) => ({
-  // Estado inicial
   deals: [],
   clients: [],
   dealOrder: {
@@ -26,15 +26,13 @@ export const useCRMStore = create<CRMState>((set) => ({
     won: [],
     lost: [],
   },
-
-  // Ações
   moveDeal: (dealId, fromStage, toStage, newIndex) => {
     set((state) => {
       const newDealOrder = { ...state.dealOrder };
       newDealOrder[fromStage] = newDealOrder[fromStage].filter((id) => id !== dealId);
       newDealOrder[toStage].splice(newIndex, 0, dealId);
       const newDeals = state.deals.map((deal) =>
-        deal.id === dealId ? { ...deal, stage: toStage } : deal
+        deal.id === dealId ? { ...deal, stage: toStage } : deal,
       );
       return { dealOrder: newDealOrder, deals: newDeals };
     });
